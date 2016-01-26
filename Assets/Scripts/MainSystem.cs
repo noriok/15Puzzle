@@ -6,43 +6,33 @@ public class MainSystem : MonoBehaviour {
     private const int N = 4;
     private GameObject[,] _grid = new GameObject[N, N];
 
-
     private Vector3 GetPiecePosition(int row, int col) {
         var x = PIECE_SIZE * col;
         var y = -PIECE_SIZE * row;
         return new Vector3(x, y, 0);
     }
 
-	// Use this for initialization
 	void Start () {
-        // float size = PIECE_SIZE;
         for (int i = 1; i <= 15; i++) {
             var prefabPath = "Prefabs/piece" + i;
 
             int row = (i - 1) / 4;
             int col = (i - 1) % 4;
-            // var x = size * col;
-            // var y = -size * row;
             var pos = GetPiecePosition(row, col);
             var prefab = Resources.Load(prefabPath);
-            var g = (GameObject)Instantiate(prefab, pos, Quaternion.identity);
-            // g.GetComponent<Renderer>().enabled = false;
-            g.GetComponent<PieceBase>().Id = i;
-
-            _grid[row, col] = g;
+            var piece = Util.Bless<PieceBase>(prefab, pos);
+            piece.Id = i;
+            _grid[row, col] = piece.gameObject;
         }
 	}
 
-	// Update is called once per frame
 	void Update () {
         if (Input.GetMouseButtonDown(0)) {
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Collider2D c = Physics2D.OverlapPoint(pos);
             if (c != null) {
-                // Debug.Log("clicked: " + c);
-
                 int id = c.gameObject.GetComponent<PieceBase>().Id;
-                Debug.Log("clicked piece id: " + id);
+                // Debug.Log("clicked piece id: " + id);
                 MovePiece(id);
             }
         }
