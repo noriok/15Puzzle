@@ -12,9 +12,12 @@ public class MainSystem : MonoBehaviour {
     private bool _isAnimationRunning = false;
 
     private Vector3 GetPiecePosition(int row, int col) {
+        float offsetX = -PIECE_SIZE * 1.5f;
+        float offsetY =  PIECE_SIZE * 1.5f;
+
         var x = PIECE_SIZE * col;
         var y = -PIECE_SIZE * row;
-        return new Vector3(x, y, 0);
+        return new Vector3(x + offsetX, y + offsetY, 0);
     }
 
 	void Start () {
