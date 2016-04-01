@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.Assertions;
 
 public class MainSystem : MonoBehaviour {
@@ -18,6 +19,10 @@ public class MainSystem : MonoBehaviour {
         var x = PIECE_SIZE * col;
         var y = -PIECE_SIZE * row;
         return new Vector3(x + offsetX, y + offsetY, 0);
+    }
+
+    private void Fail() {
+        Assert.IsTrue(false);
     }
 
 	void Start () {
@@ -80,6 +85,45 @@ public class MainSystem : MonoBehaviour {
         }
         else if (button("Shuffle Cancel")) {
         }
+        else if (button("Solve")) {
+            var board = new int[N * N];
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (_grid[i, j] == null) {
+                        board[i * N + j] = 16;
+                    }
+                    else {
+                        board[i * N + j] = _grid[i, j].GetComponent<PieceBase>().Id;
+                    }
+                }
+            }
+
+            var moves = new Solver(board).Solve();
+            Debug.Log("solve step: " + moves.Length);
+            Debug.Log(string.Join(" ", moves.Select(e => e.ToString()).ToArray()));
+
+            StartCoroutine(Solve(moves));
+        }
+        else if (button("Log Board")) {
+            LogBoard();
+        }
+    }
+
+    private void LogBoard() {
+           string s = "";
+            for (int i = 0; i < N; i++) {
+                var xs = new List<string>();
+                for (int j = 0; j < N; j++) {
+                    if (_grid[i, j] == null) {
+                        xs.Add("16");
+                    }
+                    else {
+                        xs.Add(_grid[i, j].GetComponent<PieceBase>().Id.ToString());
+                    }
+                }
+                s += string.Join(" ", xs.ToArray()) + "\n";
+            }
+            Debug.Log(s);
     }
 
     private void Swap<T>(ref T a, ref T b) {
@@ -90,14 +134,14 @@ public class MainSystem : MonoBehaviour {
     IEnumerator Slide(int row, int col) {
         if (_grid[row, col] == null) {
             Debug.Log(string.Format("ピースがありません。row:{0} col:{1}", row, col));
-            yield break;
+            Fail();
         }
 
         // 空きピースの位置
         var pos = GetEmptyPieceLoc();
         if (!IsNeighbor(row, col, pos[0], pos[1])) {
             Debug.Log(string.Format("空きセルが隣接していません。row:{0} col:{1}", row, col));
-            yield break;
+            Fail();
         }
 
         _isAnimationRunning = true;
@@ -155,6 +199,25 @@ public class MainSystem : MonoBehaviour {
                 yield return StartCoroutine(Slide(r, c));
                 cnt++;
             }
+        }
+    }
+
+    IEnumerator Solve(int[] moves) {
+        foreach (var move in moves) {
+            int r = -1;
+            int c = -1;
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < N; j++) {
+                    if (_grid[i, j] != null && _grid[i, j].GetComponent<PieceBase>().Id == move) {
+                        r = i;
+                        c = j;
+                        break;
+                    }
+                }
+            }
+
+            Assert.IsTrue(r != -1 && c != -1);
+            yield return StartCoroutine(Slide(r, c));
         }
     }
 
