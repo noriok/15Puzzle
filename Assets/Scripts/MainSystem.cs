@@ -7,7 +7,7 @@ using UnityEngine.Assertions;
 
 public class MainSystem : MonoBehaviour {
     private const float PIECE_SIZE = 1.35f;
-    private const int N = 4;
+    private const int N = 4; // 15パズルの縦横のピースサイズ(4x4)
     private GameObject[,] _grid = new GameObject[N, N];
 
     private bool _isAnimationRunning = false;
@@ -32,10 +32,10 @@ public class MainSystem : MonoBehaviour {
             int row = (i - 1) / 4;
             int col = (i - 1) % 4;
             var pos = GetPiecePosition(row, col);
-            var prefab = Resources.Load(prefabPath);
-            var piece = Util.Bless<PieceBase>(prefab, pos);
+            var obj = (GameObject)GameObject.Instantiate(Resources.Load(prefabPath), pos, Quaternion.identity);
+            var piece = obj.GetComponent<PieceBase>();
             piece.Id = i;
-            _grid[row, col] = piece.gameObject;
+            _grid[row, col] = obj;
         }
 	}
 
@@ -47,9 +47,6 @@ public class MainSystem : MonoBehaviour {
             var pos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             Collider2D c = Physics2D.OverlapPoint(pos);
             if (c != null) {
-                // int id = c.gameObject.GetComponent<PieceBase>().Id;
-                // Debug.Log("clicked piece id: " + id);
-
                 int row = -1, col = -1;
                 for (int i = 0; i < N; i++) {
                     for (int j = 0; j < N; j++) {
